@@ -1,0 +1,24 @@
+{
+  "name": "nandee-scan-action-monorepo",
+  "private": true,
+  "description": "Nandee-AI Mobile Application Security Scan: GitHub Action, GitLab CI/CD component and the nandee CLI, built on one shared core.",
+  "license": "Apache-2.0",
+  "engines": { "node": ">=20" },
+  "workspaces": ["core", "cli", "github-action", "gitlab"],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "tsc -b core cli github-action gitlab",
+    "lint": "eslint . && node scripts/check-policy.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "@vercel/ncc": "0.45.0",
+    "eslint": "10.14.0",
+    "fast-check": "4.10.2",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1",
+    "vitest": "5.0.5"
+  }
+}

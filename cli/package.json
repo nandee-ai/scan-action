@@ -1,0 +1,9 @@
+{
+  "name": "@nandee-ai/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": { "build": "tsc -b" },
+  "dependencies": { "@nandee-ai/ci-core": "0.1.0" }
+}

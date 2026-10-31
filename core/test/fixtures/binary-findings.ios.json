@@ -1,0 +1,44 @@
+[
+  {
+    "id": 201,
+    "issue_title": "App Transport Security disabled for all domains",
+    "issue_detail": "NSAllowsArbitraryLoads is true in Info.plist.",
+    "severity": "high",
+    "status": "Open",
+    "file_path": "Info.plist",
+    "line_number": null,
+    "code_snippet": null,
+    "suggestion": "Remove NSAllowsArbitraryLoads or scope exceptions to specific domains.",
+    "cwe": "CWE-319",
+    "owasp_category": "M5: Insecure Communication",
+    "masvs": ["MASVS-NETWORK-1"]
+  },
+  {
+    "id": 202,
+    "issue_title": "Binary not compiled with PIE",
+    "issue_detail": "Position-independent executable flag is missing.",
+    "severity": "medium",
+    "status": "Open",
+    "file_path": null,
+    "line_number": null,
+    "code_snippet": null,
+    "suggestion": null,
+    "cwe": null,
+    "owasp_category": "M7: Insufficient Binary Protections",
+    "masvs": ["MASVS-RESILIENCE-3"]
+  },
+  {
+    "id": 203,
+    "issue_title": "Uses insecure random (arc4random not used)",
+    "issue_detail": "rand() found in binary strings.",
+    "severity": "info",
+    "status": "Open",
+    "file_path": null,
+    "line_number": null,
+    "code_snippet": null,
+    "suggestion": null,
+    "cwe": "CWE-338",
+    "owasp_category": null,
+    "masvs": ["MASVS-CRYPTO-1"]
+  }
+]
