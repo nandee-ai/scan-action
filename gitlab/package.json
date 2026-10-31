@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "description": "Nandee-AI Mobile Application Security Scan: the runner inside the GitLab CI/CD component image.",
+  "license": "Apache-2.0",
   "engines": { "node": ">=20" },
   "scripts": { "build": "tsc -b" },
-  "dependencies": { "@nandee-ai/ci-core": "0.1.0" }
+  "bin": { "nandee-gitlab": "./dist/main.js" },
+  "dependencies": { "@nandee-ai/ci-core": "0.1.0", "zod": "4.6.7" }
 }

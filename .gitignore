@@ -3,3 +3,4 @@ node_modules/
 coverage/
 .DS_Store
 # dist/ is committed on purpose for the GitHub Action (verified by CI).
+gitlab/dist/

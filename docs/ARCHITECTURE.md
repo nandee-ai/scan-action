@@ -86,8 +86,12 @@ scan-action/   (local folder: nandee-ci-integrations)
 │   ├── templates/
 │   │   ├── scan.yml            # CI/CD Component with spec:inputs
 │   │   └── legacy/Nandee.gitlab-ci.yml   # include:remote template, GitLab < 16
-│   ├── Dockerfile              # distroless nonroot, pinned by digest (T-52)
-│   ├── src/main.ts             # reads CI_* vars, writes reports + dotenv, MR note, fix MR
+│   ├── Dockerfile              # two targets, both non-root, bases pinned by digest (T-52):
+│   │                           #   distroless (default, ghcr.io/nandee-ai/scan:1) and
+│   │                           #   with-git   (ghcr.io/nandee-ai/scan:1-git, Green Agent merge-request mode)
+│   ├── src/main.ts             # reads NANDEE_* + CI_* vars, writes reports + dotenv, MR note, fix MR
+│   ├── src/ci-env.ts           # CI_* → GitContext (fork + visibility detection)
+│   ├── src/reporters/gitlab.ts # MR note (sticky), fix MR via REST, token via git env config
 │   └── README.md
 │
 ├── examples/

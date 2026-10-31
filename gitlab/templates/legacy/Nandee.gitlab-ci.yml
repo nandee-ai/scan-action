@@ -1,0 +1,56 @@
+# Nandee-AI Mobile Application Security Scan: legacy include template for
+# GitLab versions without CI/CD components (< 16.0) and for self-managed
+# instances that cannot reach the gitlab.com catalog.
+#
+#   include:
+#     - remote: https://gitlab.com/nandee-ai/scan/-/raw/v1.0.0/templates/legacy/Nandee.gitlab-ci.yml
+#   variables:
+#     NANDEE_PROJECT_ID: acme/app
+#
+# Pin the tag in the URL.  NANDEE_API_KEY must be a masked, protected
+# CI/CD variable; every other NANDEE_* variable below can be overridden in
+# your .gitlab-ci.yml.  See README.md.
+variables:
+  NANDEE_IMAGE: "ghcr.io/nandee-ai/scan:1"
+  NANDEE_PROJECT_ID: ""
+  NANDEE_API_URL: "https://app.nandee.ai"
+  NANDEE_SCAN_TYPES: "dast"
+  NANDEE_SOURCE_PATH: "."
+  NANDEE_ARTIFACT_PATH: ""
+  NANDEE_PLATFORM: "auto"
+  NANDEE_FAIL_ON_SEVERITY: "high"
+  NANDEE_FAIL_MODE: "closed"
+  NANDEE_AI_TRIAGE: "true"
+  NANDEE_WAIT_FOR_COMPLETION: "true"
+  NANDEE_TIMEOUT_MINUTES: "30"
+  NANDEE_GREEN_AGENT: "off"
+  NANDEE_BASELINE_MODE: ""
+  NANDEE_COMMENT_DETAIL: "auto"
+  NANDEE_EXTRA_ALLOWED_HOSTS: ""
+  NANDEE_SCAN_FORK_MRS: "false"
+  NANDEE_OUTPUT_DIR: "."
+
+nandee-scan:
+  stage: test
+  image:
+    name: $NANDEE_IMAGE
+    entrypoint: [""]
+  variables:
+    GIT_DEPTH: "50"
+  script:
+    - /nodejs/bin/node /app/index.js
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+  artifacts:
+    when: always
+    expire_in: 30 days
+    reports:
+      sast: $NANDEE_OUTPUT_DIR/gl-sast-report.json
+      dependency_scanning: $NANDEE_OUTPUT_DIR/gl-dependency-scanning-report.json
+      dotenv: $NANDEE_OUTPUT_DIR/nandee.env
+    paths:
+      - $NANDEE_OUTPUT_DIR/nandee-summary.md
+      - $NANDEE_OUTPUT_DIR/nandee.sarif
