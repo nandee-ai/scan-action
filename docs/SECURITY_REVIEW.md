@@ -44,7 +44,8 @@ repository or organisation admin rights.
 - [x] `dist/` rebuilt and diffed in CI — `npm run check-dist` in `ci.yml` (T-14).
 - [x] Distroless non-root image, no shell; `with-git` variant also non-root — `gitlab/Dockerfile`; `scripts/smoke-image.sh` + Trivy (HIGH/CRITICAL fail) in `ci.yml`.
 - [x] Release: CycloneDX SBOMs, cosign keyless signatures, SLSA provenance for images and `dist/index.js`, npm provenance — `.github/workflows/release.yml`. Release jobs that reach outside GitHub run in environments with a required reviewer.
-- [x] CodeQL (JS/TS + Actions, security-and-quality), `npm audit`, dependency review, OpenSSF Scorecard — `.github/workflows/security.yml`. Local CodeQL on 1.0.0: 0 results.
+- [x] CodeQL (JS/TS + Actions, security-and-quality), `npm audit`, dependency review, OpenSSF Scorecard — `.github/workflows/security.yml`. CodeQL on main: 0 results (checked in-job; uploads to code scanning, dependency review and Scorecard switch on by themselves once the repository is public or has Advanced Security).
+- [x] First CI and Security runs on main are green (2026-10-31): Trivy on both images reports 0 HIGH/CRITICAL after moving to the debian13 distroless base and stripping npm from the with-git image.
 - [ ] **Owner**: branch protection on `main` (CI + CODEOWNERS review required, no force push); tag protection on `v*`; org-wide 2FA; secret scanning + push protection; private vulnerability reporting; environments `gitlab-release` and `npm-release` with reviewers and the `GITLAB_MIRROR_TOKEN` secret; npm trusted publisher for `@nandee-ai/cli` and `nandee`; GitLab project `nandee-ai/scan` created with a project token (`write_repository`) for the mirror; make the repository public before the first release (Marketplace requires it).
 - [ ] **Owner**: create the GitHub team `@nandee-ai/security` referenced by CODEOWNERS, or edit CODEOWNERS.
 - [ ] **Owner**: confirm security@nandee.ai is monitored (OPEN_QUESTIONS Q14).
