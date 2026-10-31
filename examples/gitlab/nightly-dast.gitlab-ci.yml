@@ -1,0 +1,29 @@
+# Nightly DAST from a scheduled pipeline (CI/CD → Schedules). Never fails the pipeline.
+# A fetch job downloads the latest release APK; the runner image has no curl or shell.
+stages: [fetch, test]
+
+include:
+  - component: gitlab.com/nandee-ai/scan/scan@1.0.0
+    inputs:
+      project_id: acme/android-app
+      scan_types: dast
+      artifact_path: app.apk
+      fail_on_severity: none
+      timeout_minutes: "120"
+      allow_failure: true
+
+fetch-apk:
+  stage: fetch
+  image: curlimages/curl:latest
+  script:
+    - curl -fsSL -o app.apk "$RELEASE_APK_URL"
+  artifacts:
+    paths: [app.apk]
+    expire_in: 1 day
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+
+nandee-scan:
+  needs: [fetch-apk]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"

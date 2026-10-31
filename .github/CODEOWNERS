@@ -1,0 +1,6 @@
+# Every change needs a review from the security owners (branch protection enforces it).
+*                       @nandee-ai/security
+/core/                  @nandee-ai/security
+/.github/               @nandee-ai/security
+/gitlab/Dockerfile      @nandee-ai/security
+/dist/                  @nandee-ai/security

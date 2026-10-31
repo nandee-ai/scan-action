@@ -1,0 +1,32 @@
+# Release gate on tags: medium+ findings block, fail_mode closed, outputs read by a later job.
+stages: [build, test, publish]
+
+include:
+  - component: gitlab.com/nandee-ai/scan/scan@1.0.0
+    inputs:
+      project_id: acme/android-app
+      scan_types: dast
+      artifact_path: app/build/outputs/apk/release/app-release-unsigned.apk
+      fail_on_severity: medium
+      fail_mode: closed
+      baseline_mode: "false"
+
+nandee-scan:
+  rules:
+    - if: $CI_COMMIT_TAG
+
+build:
+  stage: build
+  script: ./gradlew assembleRelease
+  artifacts:
+    paths: [app/build/outputs/apk/release/app-release-unsigned.apk]
+  rules:
+    - if: $CI_COMMIT_TAG
+
+publish:
+  stage: publish
+  needs: [nandee-scan]
+  script:
+    - echo "Scan $NANDEE_SCAN_ID passed=$NANDEE_PASSED, report $NANDEE_REPORT_URL"
+  rules:
+    - if: $CI_COMMIT_TAG

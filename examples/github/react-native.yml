@@ -1,0 +1,23 @@
+# React Native: SAST + SCA only (no build needed). Platform is detected from package.json.
+name: Nandee security scan
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: nandee-ai/scan-action@v1
+        with:
+          api_key: ${{ secrets.NANDEE_API_KEY }}
+          project_id: acme/rn-app
+          scan_types: sast,sca
+          comment_detail: full   # private repo: show finding titles in the PR comment

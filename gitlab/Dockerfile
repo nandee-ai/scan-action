@@ -22,8 +22,7 @@ COPY tsconfig.base.json ./
 COPY core core
 COPY gitlab gitlab
 COPY scripts/bundle-gitlab.mjs scripts/
-RUN node node_modules/typescript/bin/tsc -b core \
- && node scripts/bundle-gitlab.mjs \
+RUN node scripts/bundle-gitlab.mjs \
  && rm -rf /src/gitlab/dist/*.d.ts
 
 # ---- ghcr.io/nandee-ai/scan:1-git: same runner plus git, non-root ------------

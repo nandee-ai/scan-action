@@ -1,0 +1,26 @@
+# Green Agent: on a pull request that fails the gate, open a separate draft PR
+# with Nandee's suggested patches. It never pushes to the PR branch and never
+# runs for pull requests from forks. contents: write is needed for the push.
+name: Nandee security scan with Green Agent
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write          # push the nandee/fix-* branch
+      pull-requests: write     # the comment and the draft fix PR
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0       # the fix branch is built from the scanned commit
+      - uses: nandee-ai/scan-action@v1
+        with:
+          api_key: ${{ secrets.NANDEE_API_KEY }}
+          project_id: acme/android-app
+          green_agent: pull-request   # or: comment

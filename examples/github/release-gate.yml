@@ -1,0 +1,42 @@
+# Release gate: block a tag release on any medium+ finding, with fail_mode closed
+# so an outage never lets an unscanned build through. Outputs feed a later step.
+name: Release gate
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    outputs:
+      report_url: ${{ steps.nandee.outputs.report_url }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: ./gradlew assembleRelease
+      - id: nandee
+        uses: nandee-ai/scan-action@v1
+        with:
+          api_key: ${{ secrets.NANDEE_API_KEY }}
+          project_id: acme/android-app
+          scan_types: sast,sca,dast
+          artifact_path: app/build/outputs/apk/release/app-release-unsigned.apk
+          fail_on_severity: medium
+          fail_mode: closed
+          baseline_mode: "false"   # a release gate judges every finding, not only new ones
+      - name: Record the report link
+        env:
+          REPORT_URL: ${{ steps.nandee.outputs.report_url }}
+        run: echo "Scan report: $REPORT_URL" >> "$GITHUB_STEP_SUMMARY"
+  publish:
+    needs: gate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - run: echo "Scan passed, publishing. Report ${{ needs.gate.outputs.report_url }}"

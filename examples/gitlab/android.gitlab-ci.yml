@@ -1,0 +1,21 @@
+# Android: build the debug APK, then DAST it with the Nandee component.
+# NANDEE_API_KEY is a masked, protected CI/CD variable (Settings → CI/CD → Variables).
+# Pin the component version; pin the image by digest in production (inputs.image).
+stages: [build, test]
+
+include:
+  - component: gitlab.com/nandee-ai/scan/scan@1.0.0
+    inputs:
+      project_id: acme/android-app
+      scan_types: dast
+      artifact_path: app/build/outputs/apk/debug/app-debug.apk
+      fail_on_severity: high
+
+build:
+  stage: build
+  image: eclipse-temurin:21
+  script:
+    - ./gradlew assembleDebug
+  artifacts:
+    paths: [app/build/outputs/apk/debug/app-debug.apk]
+    expire_in: 1 day

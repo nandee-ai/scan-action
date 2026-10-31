@@ -23,7 +23,7 @@ import { evaluateGate } from "./gate.js";
 import { artifactPlatform, detectPlatform } from "./platform/detect.js";
 import { renderSummary } from "./render/summary.js";
 import { planUpload } from "./upload/plan.js";
-export const TOOL_VERSION = "0.1.0";
+export const TOOL_VERSION = "1.0.0";
 function reportPath(ref) {
     return ref.kind === "source" ? `/source-scans/${ref.id}` : `/scans/${ref.id}`;
 }

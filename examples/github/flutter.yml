@@ -1,0 +1,26 @@
+# Flutter: SAST + SCA on PRs, plus DAST on the release APK built in the same job.
+name: Nandee security scan
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable }
+      - run: flutter build apk --release
+      - uses: nandee-ai/scan-action@v1
+        with:
+          api_key: ${{ secrets.NANDEE_API_KEY }}
+          project_id: acme/flutter-app
+          scan_types: sast,sca,dast
+          artifact_path: build/app/outputs/flutter-apk/app-release.apk

@@ -7,7 +7,7 @@ import type { Logger } from "./log.js";
 import { type DetectedPlatform } from "./platform/detect.js";
 import { type SummaryInput } from "./render/summary.js";
 import { type UploadPlan } from "./upload/plan.js";
-export declare const TOOL_VERSION = "0.1.0";
+export declare const TOOL_VERSION = "1.0.0";
 export interface ScanResult {
     scanId: string;
     scanRef: ScanRef;

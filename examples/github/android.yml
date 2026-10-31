@@ -1,0 +1,30 @@
+# Android app: SAST + SCA on every push and pull request, DAST on the debug APK.
+# Pin the action by commit SHA in production: uses: nandee-ai/scan-action@<sha> # v1.x.y
+name: Nandee security scan
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write   # SARIF to code scanning
+      pull-requests: write     # the sticky PR comment
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@v5
+        with: { distribution: temurin, java-version: "21" }
+      - run: ./gradlew assembleDebug
+      - uses: nandee-ai/scan-action@v1
+        with:
+          api_key: ${{ secrets.NANDEE_API_KEY }}
+          project_id: acme/android-app
+          scan_types: sast,sca,dast
+          artifact_path: app/build/outputs/apk/debug/app-debug.apk
+          fail_on_severity: high

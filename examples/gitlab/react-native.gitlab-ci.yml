@@ -1,0 +1,21 @@
+# React Native on GitLab: the Android bundle is built and DAST-scanned.
+# SAST/SCA for GitLab-hosted source is not available yet (see the README).
+stages: [build, test]
+
+include:
+  - component: gitlab.com/nandee-ai/scan/scan@1.0.0
+    inputs:
+      project_id: acme/rn-app
+      platform: react-native
+      scan_types: dast
+      artifact_path: android/app/build/outputs/apk/release/app-release.apk
+
+build:
+  stage: build
+  image: reactnativecommunity/react-native-android:latest
+  script:
+    - npm ci
+    - cd android && ./gradlew assembleRelease
+  artifacts:
+    paths: [android/app/build/outputs/apk/release/app-release.apk]
+    expire_in: 1 day
