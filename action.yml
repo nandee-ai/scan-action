@@ -1,0 +1,100 @@
+name: "Nandee-AI Mobile Application Security Scan"
+description: "Scan Android, iOS, React Native and Flutter apps with Nandee: SAST, DAST, SCA, AI triage and Green Agent fixes, with results in code scanning and on the PR."
+author: "Nandee-AI"
+
+branding:
+  icon: shield
+  color: blue
+
+inputs:
+  api_key:
+    description: "Nandee CI token. Pass it from a secret only: ${{ secrets.NANDEE_API_KEY }}. Create one in Nandee Admin → Settings → CI Tokens."
+    required: true
+  project_id:
+    description: "Project name shown in Nandee (today this is the scan's project title)."
+    required: true
+  api_url:
+    description: "Nandee API base URL (https only)."
+    required: false
+    default: "https://app.nandee.ai"
+  scan_types:
+    description: "Comma-separated: sast, sca, dast. dast needs artifact_path."
+    required: false
+    default: "sast,sca"
+  source_path:
+    description: "Directory to detect the platform from, relative to the workspace."
+    required: false
+    default: "."
+  artifact_path:
+    description: "Built APK, AAB or IPA, relative to the workspace. Required for dast."
+    required: false
+  platform:
+    description: "auto, android, ios, react-native or flutter."
+    required: false
+    default: "auto"
+  fail_on_severity:
+    description: "Fail the job on findings at or above: critical, high, medium, low. none never fails."
+    required: false
+    default: "high"
+  fail_mode:
+    description: "closed: a Nandee outage or timeout fails the job. open: the job passes with passed=unknown."
+    required: false
+    default: "closed"
+  ai_triage:
+    description: "Only findings Nandee's AI triage did not mark as false positives count toward the gate."
+    required: false
+    default: "true"
+  wait_for_completion:
+    description: "Wait for the scan to finish. false starts it and returns."
+    required: false
+    default: "true"
+  timeout_minutes:
+    description: "How long to wait for the scan (1-180)."
+    required: false
+    default: "30"
+  green_agent:
+    description: "off, comment (suggested patches in the PR comment) or pull-request (a separate draft PR with the patches)."
+    required: false
+    default: "off"
+  baseline_mode:
+    description: "Only findings new relative to the base branch fail the gate. Default: true on pull requests."
+    required: false
+  comment_detail:
+    description: "auto (counts only on public repos), counts, or full."
+    required: false
+    default: "auto"
+  extra_allowed_hosts:
+    description: "Comma-separated extra hosts the action may contact, e.g. self-hosted blob storage. Supports *.suffix."
+    required: false
+  scan_fork_prs:
+    description: "Scan pull requests from forks. Off by default: read the README section on forks before enabling."
+    required: false
+    default: "false"
+  github_token:
+    description: "Token for code scanning upload, the PR comment and fix PRs. Needs security-events: write, pull-requests: write, and contents: write only for green_agent: pull-request."
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  scan_id:
+    description: "Nandee scan id."
+  findings_count:
+    description: "Total findings returned."
+  critical_count:
+    description: "Critical findings."
+  high_count:
+    description: "High findings."
+  medium_count:
+    description: "Medium findings."
+  low_count:
+    description: "Low findings."
+  report_url:
+    description: "Link to the scan in Nandee."
+  passed:
+    description: "true, false, or unknown (scan not completed, or fork PR skipped)."
+  platform:
+    description: "Detected platform."
+
+runs:
+  using: "node24"
+  main: "dist/index.js"

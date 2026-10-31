@@ -3,14 +3,23 @@
   "private": true,
   "description": "Nandee-AI Mobile Application Security Scan: GitHub Action, GitLab CI/CD component and the nandee CLI, built on one shared core.",
   "license": "Apache-2.0",
-  "engines": { "node": ">=20" },
-  "workspaces": ["core", "cli", "github-action", "gitlab"],
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "core",
+    "cli",
+    "github-action",
+    "gitlab"
+  ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "typecheck": "tsc -b core cli github-action gitlab",
     "lint": "eslint . && node scripts/check-policy.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "bundle": "node scripts/bundle-action.mjs",
+    "check-dist": "npm run bundle && git diff --exit-code -- dist/"
   },
   "devDependencies": {
     "@types/node": "24.19.2",

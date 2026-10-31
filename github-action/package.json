@@ -3,7 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=20" },
-  "scripts": { "build": "tsc -b" },
-  "dependencies": { "@nandee-ai/ci-core": "0.1.0" }
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "bundle": "ncc build src/main.ts -o ../dist --minify --no-source-map-register --license licenses.txt"
+  },
+  "dependencies": {
+    "@nandee-ai/ci-core": "0.1.0",
+    "@actions/core": "3.0.1",
+    "@actions/github": "9.1.1"
+  }
 }
