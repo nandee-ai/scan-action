@@ -1,0 +1,20 @@
+# iOS: a macOS runner builds an unsigned IPA; the component scans it.
+stages: [build, test]
+
+include:
+  - component: gitlab.com/nandee-ai/scan/scan@1.0.0
+    inputs:
+      project_id: acme/ios-app
+      platform: ios
+      scan_types: dast
+      artifact_path: App.ipa
+
+build:
+  stage: build
+  tags: [macos]
+  script:
+    - xcodebuild -scheme App -configuration Release -sdk iphoneos -derivedDataPath build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO build
+    - mkdir -p Payload && cp -R build/Build/Products/Release-iphoneos/App.app Payload/ && zip -qr App.ipa Payload
+  artifacts:
+    paths: [App.ipa]
+    expire_in: 1 day

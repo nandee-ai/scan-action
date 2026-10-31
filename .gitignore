@@ -5,3 +5,4 @@ coverage/
 # dist/ is committed on purpose for the GitHub Action (verified by CI).
 gitlab/dist/
 nandee.env
+cli/bundle/

@@ -1,0 +1,12 @@
+# Green Agent on GitLab: a draft merge request with Nandee's patches when the gate fails.
+# Needs the :1-git image and NANDEE_GITLAB_TOKEN: a project access token with the
+# `api` and `write_repository` scopes and the Developer role, stored masked.
+# Fix MRs never touch the source branch and never run for merge requests from forks.
+include:
+  - component: gitlab.com/nandee-ai/scan/scan@1.0.0
+    inputs:
+      project_id: acme/android-app
+      image: ghcr.io/nandee-ai/scan:1-git
+      scan_types: dast
+      artifact_path: app/build/outputs/apk/debug/app-debug.apk
+      green_agent: merge-request   # or: comment

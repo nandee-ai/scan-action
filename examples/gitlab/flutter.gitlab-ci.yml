@@ -1,0 +1,20 @@
+# Flutter: release APK built, then scanned; the MR gets a note when NANDEE_GITLAB_TOKEN is set.
+stages: [build, test]
+
+include:
+  - component: gitlab.com/nandee-ai/scan/scan@1.0.0
+    inputs:
+      project_id: acme/flutter-app
+      platform: flutter
+      scan_types: dast
+      artifact_path: build/app/outputs/flutter-apk/app-release.apk
+      comment_detail: full
+
+build:
+  stage: build
+  image: ghcr.io/cirruslabs/flutter:stable
+  script:
+    - flutter build apk --release
+  artifacts:
+    paths: [build/app/outputs/flutter-apk/app-release.apk]
+    expire_in: 1 day

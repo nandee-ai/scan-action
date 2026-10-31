@@ -1,0 +1,11 @@
+{
+  "name": "nandee",
+  "version": "1.0.0",
+  "description": "Pointer package: the Nandee-AI CLI is published as @nandee-ai/cli (binary `nandee`). This package only installs it.",
+  "license": "Apache-2.0",
+  "repository": { "type": "git", "url": "git+https://github.com/nandee-ai/scan-action.git" },
+  "homepage": "https://github.com/nandee-ai/scan-action/tree/main/cli#readme",
+  "dependencies": { "@nandee-ai/cli": "1.0.0" },
+  "bin": { "nandee": "./bin.js" },
+  "files": ["bin.js", "README.md"]
+}

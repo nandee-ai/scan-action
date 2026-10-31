@@ -1,20 +1,16 @@
 {
   "name": "@nandee-ai/cli",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "engines": {
-    "node": ">=20"
-  },
-  "scripts": {
-    "build": "tsc -b"
-  },
-  "dependencies": {
-    "@nandee-ai/ci-core": "0.1.0"
-  },
+  "version": "1.0.0",
   "description": "nandee: run a Nandee-AI mobile application security scan from any CI (Jenkins, Bitrise, CircleCI, Azure DevOps).",
-  "bin": {
-    "nandee": "./dist/main.js"
-  },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": { "type": "git", "url": "git+https://github.com/nandee-ai/scan-action.git", "directory": "cli" },
+  "homepage": "https://github.com/nandee-ai/scan-action/tree/main/cli#readme",
+  "bugs": { "email": "security@nandee.ai", "url": "https://github.com/nandee-ai/scan-action/issues" },
+  "engines": { "node": ">=20" },
+  "bin": { "nandee": "./bundle/main.js" },
+  "exports": { "./bundle/main.js": "./bundle/main.js" },
+  "files": ["bundle", "README.md"],
+  "scripts": { "build": "tsc -b", "bundle": "node ../scripts/bundle-cli.mjs" },
+  "devDependencies": { "@nandee-ai/ci-core": "1.0.0" }
 }

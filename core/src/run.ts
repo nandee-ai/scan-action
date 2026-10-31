@@ -27,7 +27,7 @@ import { artifactPlatform, detectPlatform, type DetectedPlatform } from "./platf
 import { renderSummary, type SummaryInput } from "./render/summary.js";
 import { planUpload, type UploadPlan } from "./upload/plan.js";
 
-export const TOOL_VERSION = "0.1.0";
+export const TOOL_VERSION = "1.0.0";
 
 export interface ScanResult {
   scanId: string;

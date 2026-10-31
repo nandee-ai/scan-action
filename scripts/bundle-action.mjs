@@ -8,6 +8,8 @@ import { join } from "node:path";
 const root = new URL("..", import.meta.url).pathname;
 const dist = join(root, "dist");
 
+// ncc resolves @nandee-ai/ci-core through core/dist, so build the core first.
+execFileSync(process.execPath, [join(root, "node_modules/typescript/bin/tsc"), "-b", "core"], { cwd: root, stdio: "inherit" });
 execFileSync(process.execPath, [join(root, "node_modules/@vercel/ncc/dist/ncc/cli.js"), "build", "github-action/src/main.ts", "-o", "dist", "--minify", "--no-source-map-register", "--license", "licenses.txt"], {
   cwd: root,
   stdio: "inherit",

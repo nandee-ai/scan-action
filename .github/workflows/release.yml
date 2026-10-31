@@ -1,0 +1,230 @@
+# Release: runs only for a vX.Y.Z tag pushed by a maintainer (tag protection
+# rules limit who can). Every artifact is built here, never on a laptop:
+#   - ghcr.io/nandee-ai/scan images (distroless + with-git), signed with cosign
+#     keyless, CycloneDX SBOM attached, SLSA provenance attested
+#   - GitHub release with dist/ SBOM and attestation; the floating v1 tag moves
+#   - the GitLab project nandee-ai/scan is updated with the templates (image
+#     pinned by digest) and tagged, which publishes to the CI/CD Catalog
+#   - @nandee-ai/cli and the nandee pointer package go to npm with provenance
+name: Release
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+
+permissions: {}
+
+env:
+  IMAGE: ghcr.io/nandee-ai/scan
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run lint && npm run typecheck && npm test && npm run check-dist
+      - id: v
+        name: Tag must match the version in the code
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        run: node scripts/check-version.mjs "$REF_NAME" >> "$GITHUB_OUTPUT"
+
+  image:
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write        # cosign keyless + provenance
+      attestations: write
+    outputs:
+      digest_distroless: ${{ steps.build-distroless.outputs.digest }}
+      digest_with_git: ${{ steps.build-with-git.outputs.digest }}
+    steps:
+      - uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      - id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+      - id: meta-git
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=semver,pattern={{version}},suffix=-git
+            type=semver,pattern={{major}}.{{minor}},suffix=-git
+            type=semver,pattern={{major}},suffix=-git
+      - id: build-distroless
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: gitlab/Dockerfile
+          target: distroless
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: mode=max
+          sbom: true
+      - id: build-with-git
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: gitlab/Dockerfile
+          target: with-git
+          push: true
+          tags: ${{ steps.meta-git.outputs.tags }}
+          labels: ${{ steps.meta-git.outputs.labels }}
+          provenance: mode=max
+          sbom: true
+      - name: Sign both images (keyless, Sigstore)
+        env:
+          D1: ${{ steps.build-distroless.outputs.digest }}
+          D2: ${{ steps.build-with-git.outputs.digest }}
+        run: |
+          cosign sign --yes "$IMAGE@$D1"
+          cosign sign --yes "$IMAGE@$D2"
+      - name: CycloneDX SBOM for the distroless image
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        with:
+          image: ${{ env.IMAGE }}@${{ steps.build-distroless.outputs.digest }}
+          format: cyclonedx-json
+          output-file: sbom-image.cdx.json
+          upload-artifact: true
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ steps.build-distroless.outputs.digest }}
+          push-to-registry: true
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ steps.build-with-git.outputs.digest }}
+          push-to-registry: true
+
+  github-release:
+    needs: [verify, image]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write        # the release and the v1 tag
+      id-token: write
+      attestations: write
+    steps:
+      - uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: CycloneDX SBOM for the action bundle
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: sbom-action.cdx.json
+          upload-artifact: false
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: dist/index.js
+      - name: Release notes from CHANGELOG.md
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
+        run: node scripts/changelog-section.mjs "$VERSION" > notes.md
+      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          body_path: notes.md
+          files: |
+            sbom-action.cdx.json
+            dist/index.js
+      - name: Move the floating v1 tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.verify.outputs.version }}
+          SHA: ${{ github.sha }}
+        run: node scripts/move-major-tag.mjs "$VERSION" "$SHA"
+
+  gitlab-catalog:
+    needs: [verify, image]
+    runs-on: ubuntu-latest
+    environment: gitlab-release   # required reviewer; holds GITLAB_MIRROR_TOKEN
+    permissions:
+      contents: read
+    steps:
+      - uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Assemble the GitLab project tree (templates with the image pinned by digest) and push the tag
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
+          DIGEST: ${{ needs.image.outputs.digest_distroless }}
+          DIGEST_GIT: ${{ needs.image.outputs.digest_with_git }}
+          GITLAB_MIRROR_TOKEN: ${{ secrets.GITLAB_MIRROR_TOKEN }}
+          GITLAB_PROJECT: nandee-ai/scan
+        run: node scripts/publish-gitlab.mjs
+
+  npm:
+    needs: [verify, github-release]
+    runs-on: ubuntu-latest
+    environment: npm-release
+    permissions:
+      contents: read
+      id-token: write        # npm provenance
+    steps:
+      - uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - run: npm ci --ignore-scripts
+      - run: npm run build && npm run bundle --workspace cli
+      - name: The bundled CLI runs
+        run: node cli/bundle/main.js version
+      - name: Publish @nandee-ai/cli (trusted publishing, provenance)
+        run: npm publish --provenance --access public --workspace cli
+      - name: Publish the nandee pointer package
+        run: npm publish --provenance --access public
+        working-directory: npm/nandee
