@@ -24,6 +24,6 @@ describe("planUpload (T-32)", () => {
 
   it("rejects a wrong artifact extension and non-GitHub hosts for source scans", () => {
     expect(() => planUpload(parseInputs({ ...base, scan_types: "dast", artifact_path: "x.zip" }, git), "x.zip")).toThrow(/must end in/);
-    expect(() => planUpload(parseInputs(base, { ...git, repoUrl: "https://gitlab.com/acme/app" }), null)).toThrow(/github.com/);
+    expect(() => planUpload(parseInputs(base, { ...git, repoUrl: "https://gitlab.com/acme/app" }), null)).toThrow("github.com");
   });
 });

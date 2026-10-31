@@ -58,13 +58,28 @@ function parseLine(v: string | number | null | undefined): number | null {
   return Number.isInteger(n) && n > 0 ? n : null;
 }
 
+const CHECKOUT_MARKERS = new Set(["workspace", "repo", "src", "source"]);
+
 export function normalizePath(p: string | null | undefined): string | null {
   if (!p) return null;
-  let s = p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/^\/+/, "");
+  let s = p.replace(/\\/g, "/");
+  if (s.startsWith("./")) s = s.slice(2);
+  while (s.startsWith("/")) s = s.slice(1);
   // Engines sometimes report an absolute path inside their own checkout; keep the part after a known marker.
-  const m = s.match(/(?:^|\/)(?:workspace|repo|src|source)\/(.+)$/);
-  if (s.startsWith("tmp/") || s.startsWith("home/") || s.startsWith("opt/")) s = m?.[1] ?? s;
+  if (s.startsWith("tmp/") || s.startsWith("home/") || s.startsWith("opt/")) {
+    const parts = s.split("/");
+    const idx = parts.findIndex((seg, i) => i < parts.length - 1 && CHECKOUT_MARKERS.has(seg));
+    if (idx >= 0) s = parts.slice(idx + 1).join("/");
+  }
   return s;
+}
+
+function trimDashes(s: string): string {
+  let a = 0;
+  let b = s.length;
+  while (a < b && s[a] === "-") a++;
+  while (b > a && s[b - 1] === "-") b--;
+  return s.slice(a, b);
 }
 
 export function ruleIdFor(title: string, cwe: string | null, owasp: string | null): string {
@@ -76,7 +91,7 @@ export function ruleIdFor(title: string, cwe: string | null, owasp: string | nul
     const m = owasp.match(/\b(M\d{1,2}|A\d{1,2})\b/i);
     if (m && m[1]) return `OWASP-${m[1].toUpperCase()}`;
   }
-  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+  const slug = trimDashes(title.toLowerCase().replace(/[^a-z0-9]+/g, "-")).slice(0, 60);
   return `nandee-${slug || "finding"}`;
 }
 

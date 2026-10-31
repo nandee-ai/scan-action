@@ -34,7 +34,7 @@ describe("escapeMarkdown (T-12)", () => {
   });
 
   it("codeSpan strips backticks and pipes", () => {
-    expect(codeSpan("a`b|c")).toBe("`ab\\|c`");
+    expect(codeSpan("a`b|c\\")).toBe("`ab\uff5cc`");
     expect(codeSpan("")).toBe("` `");
   });
 
