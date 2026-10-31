@@ -13,3 +13,7 @@ updates:
   - package-ecosystem: docker
     directory: /gitlab
     schedule: { interval: weekly }
+    ignore:
+      # Stay on the Node LTS line the action and distroless base use (24); digests still update.
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]
