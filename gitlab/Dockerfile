@@ -10,7 +10,7 @@
 # published as ghcr.io/nandee-ai/scan:1-git.  Base images are pinned by
 # digest (T-14); Dependabot keeps them current.
 
-FROM node:24-bookworm-slim@sha256:c86ecead9e55a5210ac1727de38a4ca840bf03dcaf34dc9749addbf383b1920c AS build
+FROM node:25-bookworm-slim@sha256:81db02c4b671288a03915da9534dbd54f96d0e7c24d80ccc54f5b36b2e684370 AS build
 WORKDIR /src
 COPY package.json package-lock.json ./
 COPY core/package.json core/
@@ -26,7 +26,7 @@ RUN node scripts/bundle-gitlab.mjs \
  && rm -rf /src/gitlab/dist/*.d.ts
 
 # ---- ghcr.io/nandee-ai/scan:1-git: same runner plus git, non-root ------------
-FROM node:24-bookworm-slim@sha256:c86ecead9e55a5210ac1727de38a4ca840bf03dcaf34dc9749addbf383b1920c AS with-git
+FROM node:25-bookworm-slim@sha256:81db02c4b671288a03915da9534dbd54f96d0e7c24d80ccc54f5b36b2e684370 AS with-git
 RUN apt-get update \
  && apt-get upgrade -y --no-install-recommends \
  && apt-get install -y --no-install-recommends git ca-certificates \
