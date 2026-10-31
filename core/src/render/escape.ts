@@ -22,10 +22,14 @@ export function escapeMarkdown(untrusted: unknown, maxLen = 300): string {
   return s;
 }
 
-/** For code spans: no escaping works inside backticks, so backticks are removed and the span is bounded. */
+/**
+ * For code spans: no escaping works inside backticks, so backticks and
+ * backslashes are removed, a pipe becomes a fullwidth bar so it cannot end
+ * a table cell, and the span is bounded.
+ */
 export function codeSpan(untrusted: unknown, maxLen = 120): string {
   let s = typeof untrusted === "string" ? untrusted : untrusted == null ? "" : String(untrusted);
-  s = s.replace(/[\u0000-\u001f\u007f`]/g, "").replace(/\|/g, "\\|");
+  s = s.replace(/[\u0000-\u001f\u007f`\\]/g, "").replace(/\|/g, "\uff5c");
   if (s.length > maxLen) s = `${s.slice(0, maxLen - 1)}…`;
   return `\`${s || " "}\``;
 }

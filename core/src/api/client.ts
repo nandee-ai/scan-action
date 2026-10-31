@@ -128,7 +128,8 @@ export function canonicalRepo(url: string): string {
   let s = url.trim().toLowerCase();
   const ssh = s.match(/^git@([^:]+):(.+)$/);
   if (ssh) s = `https://${ssh[1]}/${ssh[2]}`;
-  s = s.replace(/\.git$/, "").replace(/\/+$/, "");
+  if (s.endsWith(".git")) s = s.slice(0, -4);
+  while (s.endsWith("/")) s = s.slice(0, -1);
   try {
     const u = new URL(s);
     return `${u.hostname}${u.pathname}`;
