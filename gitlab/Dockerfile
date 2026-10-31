@@ -28,6 +28,7 @@ RUN node scripts/bundle-gitlab.mjs \
 # ---- ghcr.io/nandee-ai/scan:1-git: same runner plus git, non-root ------------
 FROM node:24-bookworm-slim@sha256:c86ecead9e55a5210ac1727de38a4ca840bf03dcaf34dc9749addbf383b1920c AS with-git
 RUN apt-get update \
+ && apt-get upgrade -y --no-install-recommends \
  && apt-get install -y --no-install-recommends git ca-certificates \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /nodejs/bin && ln -s /usr/local/bin/node /nodejs/bin/node \
@@ -43,7 +44,7 @@ WORKDIR /builds
 ENTRYPOINT ["/nodejs/bin/node", "/app/index.js"]
 
 # ---- ghcr.io/nandee-ai/scan:1 (default): distroless ---------------------------
-FROM gcr.io/distroless/nodejs24-debian12:nonroot@sha256:14d42e2511532589a7c7e01a753667a74fcc96266e137e8125006b87b0c32d0a AS distroless
+FROM gcr.io/distroless/nodejs24-debian13:nonroot@sha256:a6c34457f6da4295807e051411c7783739c65b997a324fed14e4fa292615ae91 AS distroless
 LABEL org.opencontainers.image.source="https://github.com/nandee-ai/scan-action" \
       org.opencontainers.image.description="Nandee-AI Mobile Application Security Scan runner for GitLab CI/CD" \
       org.opencontainers.image.licenses="Apache-2.0" \
