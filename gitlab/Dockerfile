@@ -32,6 +32,8 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends git ca-certificates \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /nodejs/bin && ln -s /usr/local/bin/node /nodejs/bin/node \
+ # the runner needs node and git only: drop npm, npx, corepack and yarn (and their vulnerable bundled deps)
+ && rm -rf /usr/local/lib/node_modules /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /opt/yarn-* \
  && groupadd -r nonroot && useradd -r -g nonroot -u 65532 -m nonroot
 LABEL org.opencontainers.image.source="https://github.com/nandee-ai/scan-action" \
       org.opencontainers.image.description="Nandee-AI Mobile Application Security Scan runner for GitLab CI/CD (with git, for Green Agent merge requests)" \

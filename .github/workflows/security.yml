@@ -28,9 +28,16 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           queries: security-and-quality
-      - uses: github/codeql-action/analyze@0fda7a646fd14a20daf520829ca1ae8847000819 # codeql-bundle-v2.27.3
+      # Code scanning upload needs GitHub Advanced Security on a private repository;
+      # until the repo is public the results are checked here instead of uploaded.
+      - id: analyze
+        uses: github/codeql-action/analyze@0fda7a646fd14a20daf520829ca1ae8847000819 # codeql-bundle-v2.27.3
         with:
           category: /language:${{ matrix.language }}
+          upload: ${{ github.event.repository.private && 'never' || 'always' }}
+          output: codeql-results
+      - name: Fail on any CodeQL result
+        run: node scripts/check-sarif-empty.mjs codeql-results
 
   dependencies:
     runs-on: ubuntu-latest
@@ -51,7 +58,8 @@ jobs:
         run: npm audit --audit-level=high || true
 
   dependency-review:
-    if: github.event_name == 'pull_request'
+    # Needs the dependency graph API, which private repositories get with Advanced Security.
+    if: github.event_name == 'pull_request' && !github.event.repository.private
     runs-on: ubuntu-latest
     permissions:
       contents: read
