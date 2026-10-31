@@ -16,6 +16,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
+      actions: read          # the analyze step reads its own workflow run
     strategy:
       matrix:
         language: [javascript-typescript, actions]
@@ -65,7 +66,8 @@ jobs:
           comment-summary-in-pr: on-failure
 
   scorecard:
-    if: github.event_name != 'pull_request'
+    # Scorecard publishes results for public repositories only; private repos would need a PAT.
+    if: github.event_name != 'pull_request' && !github.event.repository.private
     runs-on: ubuntu-latest
     permissions:
       contents: read
