@@ -26,7 +26,7 @@ export interface HttpOptions {
 }
 
 export interface JsonRequest {
-  method: "GET" | "POST" | "PATCH" | "DELETE";
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   url: URL;
   auth?: Secret;
   body?: unknown;

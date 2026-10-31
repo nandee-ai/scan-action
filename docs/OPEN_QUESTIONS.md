@@ -7,6 +7,7 @@ Each question says what I'll assume if there's no answer, so the build can start
 **Q1. How does a source scan get the code?**
 Today `POST /source-scans/github` takes a repo URL and Nandee clones it server-side, via the tenant's GitHub App installation. That is good for the threat model (the runner uploads nothing for SAST/SCA) but it means: (a) the repo must be reachable by Nandee's GitHub App, so GitLab-hosted repos can't be scanned this way today; (b) a PR from a fork can't be scanned at the PR's commit unless Nandee can fetch it.
 *Assume:* GitHub repos go through the URL path. For GitLab and other hosts, the integration marks SAST/SCA as "not available for this host yet" with a clear error, until a source-upload endpoint exists. I will define `uploadSourceArchive()` on the interface, mocked, for that future endpoint.
+*Consequence for GitLab (2026-10-31):* the GitLab component defaults to `scan_types: dast` on the built artifact, because `sast,sca` would fail with exit 2 on every GitLab-hosted repository. Teams that mirror to github.com can set `scan_types: sast,sca` once the mirror is installed in Nandee's GitHub App; the runner then scans the mirror URL only if `CI_PROJECT_URL` is on github.com, which on gitlab.com it never is, so for now source scans from GitLab need the CLI with `--repo-url`.
 
 **Q2. There is no `project_id`.**
 Scans belong to the token's user and tenant; `project_title` is a free-text string on both scan kinds.
