@@ -3,7 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=20" },
-  "scripts": { "build": "tsc -b" },
-  "dependencies": { "@nandee-ai/ci-core": "0.1.0" }
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@nandee-ai/ci-core": "0.1.0"
+  },
+  "description": "nandee: run a Nandee-AI mobile application security scan from any CI (Jenkins, Bitrise, CircleCI, Azure DevOps).",
+  "bin": {
+    "nandee": "./dist/main.js"
+  },
+  "license": "Apache-2.0"
 }
